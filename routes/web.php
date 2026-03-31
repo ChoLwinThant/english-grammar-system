@@ -9,3 +9,4 @@ Route::get('/', function () {
 
 Route::get('/grammar-check', [GrammarCheckController::class, 'index'])->name('grammar.check');
 Route::post('/grammar-check', [GrammarCheckController::class, 'store'])->name('grammar.check.store');
+Route::get('/grammar-history', [GrammarCheckController::class, 'history'])->name('grammar.history');

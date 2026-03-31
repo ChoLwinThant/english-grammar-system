@@ -11,6 +11,11 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="/">English Grammar System</a>
+
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" href="{{ route('grammar.check') }}">Grammar Checker</a>
+                <a class="nav-link text-white" href="{{ route('grammar.history') }}">History</a>
+            </div>
         </div>
     </nav>
 
