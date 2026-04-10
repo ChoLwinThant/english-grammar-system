@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 use App\Models\GrammarCheck;
 
 class GrammarCheckController extends Controller
@@ -62,6 +63,7 @@ class GrammarCheckController extends Controller
         $explanation = $json['explanation'] ?? 'Error';
 
         GrammarCheck::create([
+            'user_id' => Auth::id(),
             'original_text' => $inputText,
             'corrected_text' => $correctedText,
             'explanation' => $explanation,
@@ -81,7 +83,9 @@ class GrammarCheckController extends Controller
 
     public function history()
     {
-        $grammarChecks = GrammarCheck::latest()->get();
+        $grammarChecks = GrammarCheck::where('user_id', Auth::id())
+            ->latest()
+            ->get();
 
         return view('grammar-history', compact('grammarChecks'));
     }
