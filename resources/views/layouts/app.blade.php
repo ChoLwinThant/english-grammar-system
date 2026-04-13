@@ -22,6 +22,7 @@
                         
                         @if(Auth::user()->role === 'admin')
                             <a class="nav-link text-white" href="{{ route('admin.categories.index') }}">Admin Categories</a>
+                            <a class="nav-link text-white" href="{{ route('admin.topics.index') }}">Admin Topics</a>
                         @endif
                         <a class="nav-link text-white" href="{{ route('dashboard') }}">Dashboard</a>
                         <a class="nav-link text-white" href="{{ route('grammar.check') }}">Grammar Checker</a>
@@ -36,12 +37,12 @@
                         <span class="navbar-text text-white bg-white bg-opacity-10 rounded-pill px-3 py-2 me-lg-2 mb-2 mb-lg-0">
                             Signed in as <strong>{{ Auth::user()->name }}</strong>
                         </span>
-                        <span class="badge bg-light text-dark me-3">
+                        {{-- <span class="badge bg-light text-dark me-3">
                             Signed in as {{ Auth::user()->name }} ({{ Auth::user()->email }})
                         </span>
                         <span class="badge bg-light text-dark me-3">
                             {{ Auth::user()->name }} | {{ Auth::user()->email }} | Role: {{ Auth::user()->role }}
-                        </span>
+                        </span> --}}
                     @else
                         <a class="nav-link text-white" href="{{ route('login') }}">Login</a>
                         <a class="nav-link text-white" href="{{ route('register') }}">Register</a>
