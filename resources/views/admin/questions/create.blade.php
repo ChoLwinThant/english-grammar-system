@@ -66,6 +66,11 @@
                     </select>
                 </div>
 
+                <div class="mb-3">
+                    <label for="explanation" class="form-label">Explanation</label>
+                    <textarea name="explanation" id="explanation" rows="3" class="form-control">{{ old('explanation') }}</textarea>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Save</button>
                 <a href="{{ route('admin.questions.index') }}" class="btn btn-secondary">Cancel</a>
             </form>

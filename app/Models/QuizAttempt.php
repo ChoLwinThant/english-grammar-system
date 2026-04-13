@@ -4,18 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Question extends Model
+class QuizAttempt extends Model
 {
     protected $fillable = [
+        'user_id',
         'topic_id',
-        'question_text',
-        'option_a',
-        'option_b',
-        'option_c',
-        'option_d',
-        'correct_answer',
-        'explanation',
+        'score',
+        'total_questions',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function topic()
     {

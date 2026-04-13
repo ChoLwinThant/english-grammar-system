@@ -28,6 +28,8 @@
                         <a class="nav-link text-white" href="{{ route('dashboard') }}">Dashboard</a>
                         <a class="nav-link text-white" href="{{ route('grammar.check') }}">Grammar Checker</a>
                         <a class="nav-link text-white" href="{{ route('grammar.history') }}">History</a>
+                        <a class="nav-link text-white" href="{{ route('quiz.categories') }}">Quiz</a>
+                        <a class="nav-link text-white" href="{{ route('quiz.history') }}">Quiz History</a>
 
                         <form method="POST" action="{{ route('logout') }}" class="mb-0">
                             @csrf

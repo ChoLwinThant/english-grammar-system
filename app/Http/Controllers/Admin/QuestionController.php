@@ -63,6 +63,7 @@ class QuestionController extends Controller
             'option_c' => ['required', 'string', 'max:255'],
             'option_d' => ['required', 'string', 'max:255'],
             'correct_answer' => ['required', 'in:A,B,C,D'],
+            'explanation' => ['nullable', 'string'],
         ]);
 
         $question->update([
@@ -73,6 +74,7 @@ class QuestionController extends Controller
             'option_c' => $request->option_c,
             'option_d' => $request->option_d,
             'correct_answer' => $request->correct_answer,
+            'explanation' => $request->explanation,
         ]);
 
         return redirect()->route('admin.questions.index')

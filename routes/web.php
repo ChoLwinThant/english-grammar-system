@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TopicController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\QuizController;
 
 Route::get('/', function () {
     return view('home');
@@ -23,6 +24,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/grammar-check', [GrammarCheckController::class, 'index'])->name('grammar.check');
     Route::post('/grammar-check', [GrammarCheckController::class, 'store'])->name('grammar.check.store');
     Route::get('/grammar-history', [GrammarCheckController::class, 'history'])->name('grammar.history');
+
+    Route::get('/quiz', [QuizController::class, 'categories'])->name('quiz.categories');
+    Route::get('/quiz/category/{category}', [QuizController::class, 'topics'])->name('quiz.topics');
+    Route::get('/quiz/topic/{topic}', [QuizController::class, 'start'])->name('quiz.start');
+    Route::post('/quiz/topic/{topic}', [QuizController::class, 'submit'])->name('quiz.submit');
+    Route::get('/quiz-history', [QuizController::class, 'history'])->name('quiz.history');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
