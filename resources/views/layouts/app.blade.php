@@ -23,6 +23,7 @@
                         @if(Auth::user()->role === 'admin')
                             <a class="nav-link text-white" href="{{ route('admin.categories.index') }}">Admin Categories</a>
                             <a class="nav-link text-white" href="{{ route('admin.topics.index') }}">Admin Topics</a>
+                            <a class="nav-link text-white" href="{{ route('admin.questions.index') }}">Admin Questions</a>
                         @endif
                         <a class="nav-link text-white" href="{{ route('dashboard') }}">Dashboard</a>
                         <a class="nav-link text-white" href="{{ route('grammar.check') }}">Grammar Checker</a>
