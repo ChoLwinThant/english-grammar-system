@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GrammarCheckController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\CategoryController;
 
 Route::get('/', function () {
     return view('home');
@@ -20,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/grammar-check', [GrammarCheckController::class, 'index'])->name('grammar.check');
     Route::post('/grammar-check', [GrammarCheckController::class, 'store'])->name('grammar.check.store');
     Route::get('/grammar-history', [GrammarCheckController::class, 'history'])->name('grammar.history');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('categories', CategoryController::class)->except(['show']);
 });
 
 require __DIR__ . '/auth.php';
