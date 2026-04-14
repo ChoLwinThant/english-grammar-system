@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TopicController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\QuizController;
+use App\Models\GrammarCheck;
+use App\Models\QuizAttempt;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('home');
@@ -14,8 +17,29 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+        $userId = Auth::id();
+
+        $totalGrammarChecks = GrammarCheck::where('user_id', $userId)->count();
+        $totalQuizAttempts = QuizAttempt::where('user_id', $userId)->count();
+        $averageQuizScore = QuizAttempt::where('user_id', $userId)->avg('score');
+
+        $latestGrammarCheck = GrammarCheck::where('user_id', $userId)
+            ->latest()
+            ->first();
+
+        $latestQuizAttempt = QuizAttempt::with('topic.category')
+            ->where('user_id', $userId)
+            ->latest()
+            ->first();
+
+        return view('dashboard', compact(
+            'totalGrammarChecks',
+            'totalQuizAttempts',
+            'averageQuizScore',
+            'latestGrammarCheck',
+            'latestQuizAttempt'
+        ));
+    })->middleware(['auth'])->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
