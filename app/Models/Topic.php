@@ -9,6 +9,7 @@ class Topic extends Model
     protected $fillable = [
         'category_id',
         'name',
+        'description',
     ];
 
     public function category()

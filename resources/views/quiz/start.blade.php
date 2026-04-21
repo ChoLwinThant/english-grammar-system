@@ -15,33 +15,20 @@
                         <h5 class="mb-3">Question {{ $index + 1 }}</h5>
                         <p><strong>{{ $question->question_text }}</strong></p>
 
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="question_{{ $question->id }}" value="A" id="q{{ $question->id }}a">
-                            <label class="form-check-label" for="q{{ $question->id }}a">
-                                A. {{ $question->option_a }}
-                            </label>
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="question_{{ $question->id }}" value="B" id="q{{ $question->id }}b">
-                            <label class="form-check-label" for="q{{ $question->id }}b">
-                                B. {{ $question->option_b }}
-                            </label>
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="question_{{ $question->id }}" value="C" id="q{{ $question->id }}c">
-                            <label class="form-check-label" for="q{{ $question->id }}c">
-                                C. {{ $question->option_c }}
-                            </label>
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="question_{{ $question->id }}" value="D" id="q{{ $question->id }}d">
-                            <label class="form-check-label" for="q{{ $question->id }}d">
-                                D. {{ $question->option_d }}
-                            </label>
-                        </div>
+                        @foreach($question->display_options as $option)
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="question_{{ $question->id }}"
+                                    value="{{ $option['key'] }}"
+                                    id="q{{ $question->id }}{{ strtolower($option['key']) }}"
+                                >
+                                <label class="form-check-label" for="q{{ $question->id }}{{ strtolower($option['key']) }}">
+                                    {{ $option['key'] }}. {{ $option['text'] }}
+                                </label>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endforeach

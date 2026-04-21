@@ -24,7 +24,16 @@ class QuizController extends Controller
 
     public function start(Topic $topic)
     {
-        $questions = $topic->questions()->get();
+        $questions = $topic->questions()->get()->map(function ($question) {
+            $question->display_options = collect([
+                ['key' => 'A', 'text' => $question->option_a],
+                ['key' => 'B', 'text' => $question->option_b],
+                ['key' => 'C', 'text' => $question->option_c],
+                ['key' => 'D', 'text' => $question->option_d],
+            ])->shuffle()->values();
+
+            return $question;
+        });
 
         return view('quiz.start', compact('topic', 'questions'));
     }

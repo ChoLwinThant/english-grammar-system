@@ -11,8 +11,35 @@ class QuestionController extends Controller
 {
     public function index()
     {
-        $questions = Question::with('topic.category')->latest()->get();
-        return view('admin.questions.index', compact('questions'));
+        $search = trim((string) request('search'));
+        $selectedTopicId = request('topic_id');
+
+        $questions = Question::with('topic.category')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery->where('question_text', 'like', '%' . $search . '%')
+                        ->orWhere('option_a', 'like', '%' . $search . '%')
+                        ->orWhere('option_b', 'like', '%' . $search . '%')
+                        ->orWhere('option_c', 'like', '%' . $search . '%')
+                        ->orWhere('option_d', 'like', '%' . $search . '%')
+                        ->orWhere('explanation', 'like', '%' . $search . '%')
+                        ->orWhereHas('topic', function ($topicQuery) use ($search) {
+                            $topicQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                                    $categoryQuery->where('name', 'like', '%' . $search . '%');
+                                });
+                        });
+                });
+            })
+            ->when($selectedTopicId, function ($query) use ($selectedTopicId) {
+                $query->where('topic_id', $selectedTopicId);
+            })
+            ->latest()
+            ->get();
+
+        $topics = Topic::with('category')->orderBy('name')->get();
+
+        return view('admin.questions.index', compact('questions', 'topics', 'search', 'selectedTopicId'));
     }
 
     public function create()
