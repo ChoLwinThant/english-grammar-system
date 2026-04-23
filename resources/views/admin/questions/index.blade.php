@@ -14,8 +14,8 @@
         </div>
     @endif
 
-    <form method="GET" action="{{ route('admin.questions.index') }}" class="admin-toolbar">
-        <select name="topic_id" class="form-select">
+    <form method="GET" action="{{ route('admin.questions.index') }}" class="admin-toolbar" id="questionFilterForm">
+        <select name="topic_id" class="form-select" onchange="this.form.submit()">
             <option value="">All Topics</option>
             @foreach($topics as $topic)
                 <option value="{{ $topic->id }}" {{ (string) $selectedTopicId === (string) $topic->id ? 'selected' : '' }}>
@@ -23,10 +23,6 @@
                 </option>
             @endforeach
         </select>
-
-        <div class="admin-toolbar-actions">
-            <button type="submit" class="btn btn-primary btn-admin">Apply</button>
-        </div>
 
         <div class="admin-toolbar-spacer"></div>
 

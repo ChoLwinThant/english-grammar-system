@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'English Grammar System') }}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
     :root {
         --primary: #6d28d9;
@@ -232,6 +233,382 @@
     .content-wrap {
         max-width: 1360px;
         margin: 0 auto;
+    }
+
+    .dashboard-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .dashboard-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 2rem;
+        border: 1px solid rgba(109, 40, 217, 0.12);
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at top right, rgba(109, 40, 217, 0.16), transparent 34%),
+            linear-gradient(135deg, #ffffff 0%, #f7f7ff 46%, #eef4ff 100%);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    }
+
+    .dashboard-hero::after {
+        content: '';
+        position: absolute;
+        right: -60px;
+        bottom: -80px;
+        width: 220px;
+        height: 220px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.45);
+        filter: blur(4px);
+    }
+
+    .dashboard-hero-content,
+    .dashboard-hero-actions {
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.9rem;
+        padding: 0.4rem 0.78rem;
+        border: 1px solid rgba(109, 40, 217, 0.14);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .dashboard-hero-title {
+        max-width: 14ch;
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.35rem);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+    }
+
+    .dashboard-hero-copy {
+        max-width: 52ch;
+        margin: 1rem 0 0;
+        color: #4b5563;
+        font-size: 1.02rem;
+        line-height: 1.8;
+    }
+
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .dashboard-stat {
+        padding: 1.25rem 1.35rem;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(10px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+
+    .dashboard-stat-label {
+        margin: 0 0 0.4rem;
+        color: var(--text-muted);
+        font-size: 0.86rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .dashboard-stat-value {
+        margin: 0;
+        font-size: clamp(2rem, 3vw, 2.6rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+
+    .dashboard-stat-note {
+        margin: 0.55rem 0 0;
+        color: #64748b;
+        font-size: 0.92rem;
+    }
+
+    .dashboard-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.95fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .dashboard-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .dashboard-panel {
+        padding: 1.6rem;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+    }
+
+    .dashboard-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .dashboard-panel-title {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .dashboard-panel-copy {
+        margin: 0.4rem 0 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .dashboard-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.38rem 0.72rem;
+        border-radius: 999px;
+        background: #f3f0ff;
+        color: var(--primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .dashboard-highlight {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .dashboard-highlight-block {
+        padding: 1rem 1.05rem;
+        border-radius: 18px;
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+    }
+
+    .dashboard-highlight-label {
+        margin: 0 0 0.45rem;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .dashboard-highlight-text {
+        margin: 0;
+        line-height: 1.7;
+        color: #1f2937;
+    }
+
+    .dashboard-meta {
+        margin-top: 1rem;
+        color: var(--text-muted);
+        font-size: 0.92rem;
+    }
+
+    .dashboard-fab {
+        position: fixed;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        z-index: 1080;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.85rem;
+    }
+
+    .dashboard-fab-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.7rem;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px) scale(0.96);
+        transform-origin: bottom right;
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+        pointer-events: none;
+    }
+
+    .dashboard-fab.is-open .dashboard-fab-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .dashboard-tool {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        min-width: min(320px, calc(100vw - 6rem));
+        padding: 0.82rem 0.95rem;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.95);
+        color: inherit;
+        text-decoration: none;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+        backdrop-filter: blur(16px);
+        transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+    }
+
+    .dashboard-tool:hover {
+        transform: translateX(-4px);
+        border-color: rgba(109, 40, 217, 0.24);
+        background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+        box-shadow: 0 18px 38px rgba(109, 40, 217, 0.12);
+        color: inherit;
+    }
+
+    .dashboard-tool-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 14px;
+        background: #f5f3ff;
+        color: var(--primary);
+        flex: 0 0 auto;
+        box-shadow: inset 0 0 0 1px rgba(109, 40, 217, 0.08);
+    }
+
+    .dashboard-tool-icon i {
+        font-size: 1.05rem;
+        line-height: 1;
+    }
+
+    .dashboard-tool-body {
+        min-width: 0;
+    }
+
+    .dashboard-tool-title {
+        margin: 0;
+        font-size: 0.97rem;
+        font-weight: 700;
+    }
+
+    .dashboard-tool-copy {
+        margin: 0.2rem 0 0;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
+    .dashboard-fab-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4rem;
+        height: 4rem;
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+        color: #ffffff;
+        box-shadow: 0 22px 40px rgba(79, 70, 229, 0.32);
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .dashboard-fab-toggle:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 26px 46px rgba(79, 70, 229, 0.38);
+    }
+
+    .dashboard-fab-toggle-text {
+        display: inline-block;
+        font-size: 1.4rem;
+        line-height: 1;
+        transition: transform 0.18s ease;
+    }
+
+    .dashboard-fab.is-open .dashboard-fab-toggle-text {
+        transform: rotate(45deg);
+    }
+
+    .dashboard-fab-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1070;
+        background: transparent;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.18s ease, visibility 0.18s ease;
+    }
+
+    .dashboard-fab-backdrop.is-visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .dashboard-empty {
+        padding: 1.25rem;
+        border: 1px dashed #d7deeb;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        color: var(--text-muted);
+        line-height: 1.7;
+    }
+
+    @media (max-width: 991.98px) {
+        .dashboard-stats,
+        .dashboard-body {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-hero {
+            padding: 1.5rem;
+            border-radius: 22px;
+        }
+
+        .dashboard-panel {
+            padding: 1.25rem;
+            border-radius: 20px;
+        }
+
+        .dashboard-panel-header {
+            flex-direction: column;
+        }
+
+        .dashboard-tool {
+            width: 100%;
+            min-width: min(280px, calc(100vw - 3rem));
+        }
+
+        .dashboard-fab {
+            right: 1rem;
+            bottom: 1rem;
+        }
+
+        .dashboard-fab-toggle {
+            width: 3.6rem;
+            height: 3.6rem;
+        }
     }
 </style>
 </head>
@@ -821,6 +1198,46 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script>
+        (() => {
+            const fab = document.getElementById('dashboardFab');
+            const toggle = document.getElementById('dashboardFabToggle');
+            const menu = document.getElementById('dashboardFabMenu');
+            const backdrop = document.getElementById('dashboardFabBackdrop');
+
+            if (!fab || !toggle || !menu || !backdrop) {
+                return;
+            }
+
+            const setOpenState = (open) => {
+                fab.classList.toggle('is-open', open);
+                toggle.setAttribute('aria-expanded', String(open));
+                toggle.setAttribute('aria-label', open ? 'Close quick actions' : 'Open quick actions');
+                backdrop.hidden = !open;
+                backdrop.classList.toggle('is-visible', open);
+            };
+
+            toggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                setOpenState(!fab.classList.contains('is-open'));
+            });
+
+            backdrop.addEventListener('click', () => {
+                setOpenState(false);
+            });
+
+            menu.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    setOpenState(false);
+                });
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    setOpenState(false);
+                }
+            });
+        })();
+
         (() => {
             const layout = document.getElementById('adminLayout');
             const toggle = document.getElementById('adminSidebarToggle');

@@ -25,7 +25,7 @@
                                     id="q{{ $question->id }}{{ strtolower($option['key']) }}"
                                 >
                                 <label class="form-check-label" for="q{{ $question->id }}{{ strtolower($option['key']) }}">
-                                    {{ $option['key'] }}. {{ $option['text'] }}
+                                    {{ $option['text'] }}
                                 </label>
                             </div>
                         @endforeach
