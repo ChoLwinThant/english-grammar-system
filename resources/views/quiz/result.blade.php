@@ -24,17 +24,14 @@
                 <p>
                     <strong>Your Answer:</strong>
                     <span class="{{ $result['is_correct'] ? 'text-success' : 'text-danger' }}">
-                        {{ $result['selected_answer'] ?? 'No answer' }}
-                        @if($result['selected_answer'])
-                            - {{ $result['selected_answer_text'] }}
-                        @endif
+                        {{ $result['selected_answer'] ? $result['selected_answer_text'] : 'No answer' }}
                     </span>
                 </p>
 
                 <p>
                     <strong>Correct Answer:</strong>
                     <span class="text-success">
-                        {{ $result['correct_answer'] }} - {{ $result['correct_answer_text'] }}
+                        {{ $result['correct_answer_text'] }}
                     </span>
                 </p>
 

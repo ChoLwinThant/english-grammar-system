@@ -164,6 +164,102 @@
         font-weight: 600;
     }
 
+    .account-menu .dropdown-toggle::after {
+        display: none;
+    }
+
+    .account-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.35rem 0.4rem 0.35rem 0.8rem;
+        border: 1px solid var(--primary-border);
+        border-radius: 999px;
+        background: #ffffff;
+        color: var(--text);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+    }
+
+    .account-trigger:hover,
+    .account-trigger:focus,
+    .account-trigger.show {
+        border-color: rgba(109, 40, 217, 0.28);
+        background: #ffffff;
+        color: var(--text);
+    }
+
+    .account-trigger-name {
+        font-weight: 700;
+        font-size: 0.94rem;
+        line-height: 1;
+    }
+
+    .account-trigger-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: var(--primary);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.83rem;
+        text-transform: uppercase;
+        flex: 0 0 auto;
+    }
+
+    .account-dropdown {
+        min-width: 280px;
+        margin-top: 0.8rem;
+        padding: 0;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 20px 42px rgba(15, 23, 42, 0.14);
+    }
+
+    .account-dropdown .dropdown-item,
+    .account-dropdown .dropdown-item-text {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .account-summary {
+        padding: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #faf7ff 100%);
+    }
+
+    .account-summary-name {
+        margin: 0;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .account-summary-email {
+        margin: 0.25rem 0 0;
+        color: var(--text-muted);
+        font-size: 0.92rem;
+    }
+
+    .account-logout {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        color: #dc2626;
+        font-weight: 600;
+    }
+
+    .account-logout:hover,
+    .account-logout:focus {
+        background: #fff5f5;
+        color: #b91c1c;
+    }
+
+    .account-logout i {
+        font-size: 1rem;
+    }
+
     .shadow-soft {
         box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
     }
@@ -616,6 +712,9 @@
     @php
         $isAdmin = Auth::check() && Auth::user()->role === 'admin';
         $isAdminRoute = request()->routeIs('admin.*');
+        $userInitials = Auth::check()
+            ? collect(explode(' ', trim(Auth::user()->name)))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('')
+            : '';
     @endphp
 
     <style>
@@ -1078,15 +1177,34 @@
                             </a>
                         @endif
 
-                        <form method="POST" action="{{ route('logout') }}" class="mb-0">
-                            @csrf
-                            <button type="submit" class="btn btn-link nav-link text-decoration-none p-0">
-                                Logout
+                        <div class="dropdown account-menu ms-lg-3">
+                            <button
+                                class="btn account-trigger dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                <span class="account-trigger-name">{{ Auth::user()->name }}</span>
+                                <span class="account-trigger-mark">{{ $userInitials }}</span>
                             </button>
-                        </form>
-                        <span class="badge-role ms-3">
-                            {{ Auth::user()->name }}
-                        </span>
+
+                            <div class="dropdown-menu dropdown-menu-end account-dropdown">
+                                <div class="account-summary">
+                                    <p class="account-summary-name">{{ Auth::user()->name }}</p>
+                                    <p class="account-summary-email">{{ Auth::user()->email }}</p>
+                                </div>
+
+                                <div class="dropdown-divider my-0"></div>
+
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item account-logout">
+                                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     @else
                         <a class="nav-link" href="{{ route('login') }}">Login</a>
                         <a class="nav-link" href="{{ route('register') }}">Register</a>
@@ -1095,12 +1213,6 @@
             </div>
         </div>
     </nav>
-
-    @php
-        $userInitials = Auth::check()
-            ? collect(explode(' ', trim(Auth::user()->name)))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('')
-            : '';
-    @endphp
 
     <main class="{{ $isAdmin && $isAdminRoute ? 'admin-shell' : 'container py-5' }}">
         @if($isAdmin && $isAdminRoute)
