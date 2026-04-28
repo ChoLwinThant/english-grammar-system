@@ -27,7 +27,7 @@
 
     body {
         background-color: var(--bg);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
         color: var(--text);
     }
 
@@ -87,6 +87,7 @@
     .section-title,
     .card-title {
         color: var(--text);
+        font-family: Cambria, Georgia, 'Times New Roman', Times, serif;
         font-weight: 700;
     }
 

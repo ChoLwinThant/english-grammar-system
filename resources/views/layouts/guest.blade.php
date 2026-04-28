@@ -25,7 +25,7 @@
             margin: 0;
             min-height: 100vh;
             background: linear-gradient(180deg, #faf8ff 0%, #f8fafc 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             color: var(--text);
         }
 
@@ -73,6 +73,7 @@
 
         .brand-title {
             font-size: 2rem;
+            font-family: Cambria, Georgia, 'Times New Roman', Times, serif;
             font-weight: 800;
             line-height: 1.2;
             margin-bottom: 1rem;
@@ -100,6 +101,7 @@
 
         .auth-title {
             font-size: 1.8rem;
+            font-family: Cambria, Georgia, 'Times New Roman', Times, serif;
             font-weight: 700;
             margin-bottom: 0.5rem;
             color: var(--text);

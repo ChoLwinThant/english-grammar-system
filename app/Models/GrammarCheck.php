@@ -11,5 +11,10 @@ class GrammarCheck extends Model
         'original_text',
         'corrected_text',
         'explanation',
+        'report_json',
+    ];
+
+    protected $casts = [
+        'report_json' => 'array',
     ];
 }

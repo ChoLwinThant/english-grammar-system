@@ -48,6 +48,61 @@
             border-top: 1px solid var(--border);
         }
 
+        .quiz-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+        }
+
+        .quiz-filter-label {
+            margin: 0;
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .quiz-filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+
+        .quiz-filter-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.38rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+        }
+
+        .quiz-filter-pill:hover {
+            border-color: var(--primary-border);
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .quiz-filter-pill.active {
+            border-color: var(--primary-border);
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
         .quiz-item {
             display: flex;
             justify-content: space-between;
@@ -64,6 +119,56 @@
 
         .quiz-item h5 {
             margin: 0 0 0.25rem;
+        }
+
+        .quiz-topic-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .quiz-topic-title {
+            margin: 0;
+        }
+
+        .quiz-difficulty {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.22rem 0.56rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            line-height: 1.1;
+        }
+
+        .quiz-difficulty-basic {
+            background: #ecfdf3;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .quiz-difficulty-elementary {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #93c5fd;
+        }
+
+        .quiz-difficulty-intermediate {
+            background: #fff7ed;
+            color: #c2410c;
+            border-color: #fdba74;
+        }
+
+        .quiz-difficulty-advanced {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fca5a5;
         }
 
         .quiz-item p {
@@ -123,14 +228,45 @@
             <a href="{{ route('quiz.categories') }}" class="btn btn-outline-primary">Back to Categories</a>
         </section>
 
+        @if($hasTopics)
+            <section class="quiz-filter-bar">
+                
+                <div class="quiz-filter-actions">
+                    <a
+                        href="{{ route('quiz.topics', $category) }}"
+                        class="quiz-filter-pill {{ $selectedDifficulty === '' ? 'active' : '' }}"
+                    >
+                        All
+                    </a>
+                    @foreach($difficultyOptions as $value => $label)
+                        <a
+                            href="{{ route('quiz.topics', ['category' => $category, 'difficulty' => $value]) }}"
+                            class="quiz-filter-pill {{ $selectedDifficulty === $value ? 'active' : '' }}"
+                        >
+                            {{ $label }}
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         @if($topics->isEmpty())
-            <div class="quiz-empty">No topics available in this category yet.</div>
+            <div class="quiz-empty">
+                {{ $selectedDifficulty !== ''
+                    ? 'No topics match this difficulty in the selected category yet.'
+                    : 'No topics available in this category yet.' }}
+            </div>
         @else
             <section class="quiz-list">
                 @foreach($topics as $topic)
                     <article class="quiz-item">
                         <div>
-                            <h5>{{ $topic->name }}</h5>
+                            <div class="quiz-topic-head">
+                                <h5 class="quiz-topic-title">{{ $topic->name }}</h5>
+                                <span class="quiz-difficulty quiz-difficulty-{{ $topic->difficulty }}">
+                                    {{ $topic->difficultyLabel() }}
+                                </span>
+                            </div>
                             <p>{{ $topic->description ?: 'Start this topic quiz to test understanding and improve accuracy.' }}</p>
                         </div>
                         <a href="{{ route('quiz.start', $topic) }}" class="quiz-action">Start Quiz</a>
