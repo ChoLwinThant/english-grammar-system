@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\GrammarCheck;
+use App\Models\Topic;
 
 class GrammarCheckController extends Controller
 {
@@ -78,6 +79,8 @@ class GrammarCheckController extends Controller
         $outputText = $data['output'][0]['content'][0]['text'] ?? null;
 
         $report = $this->parseGrammarResponse($outputText, $isSingleSentence, $sourceType, $pdfPageCount);
+        $studyPlan = $this->buildStudyPlan($report);
+        $report['study_plan'] = $studyPlan;
         $correctedText = $this->buildCorrectedTextForStorage($report);
         $explanation = $this->buildExplanationForStorage($report);
 
@@ -103,6 +106,7 @@ class GrammarCheckController extends Controller
             'sourceLabel' => $uploadedFile ? $uploadedFile->getClientOriginalName() : 'Typed text',
             'downloadReady' => true,
             'report' => $report,
+            'studyPlan' => $studyPlan,
         ]);
     }
 
@@ -311,7 +315,8 @@ class GrammarCheckController extends Controller
             return "Status: " . ($report['is_correct'] ? 'Correct' : 'Needs correction') . "\n"
                 . "Sentence:\n" . ($report['original_sentence'] ?? '') . "\n\n"
                 . "Corrected Sentence:\n" . ($report['corrected_sentence'] ?? '') . "\n\n"
-                . "Explanation:\n" . ($report['summary'] ?? '') . "\n";
+                . "Explanation:\n" . ($report['summary'] ?? '') . "\n"
+                . $this->buildStudyPlanDownloadContent($report);
         }
 
         $content = "Issue Summary\n";
@@ -319,7 +324,8 @@ class GrammarCheckController extends Controller
         if (empty($report['issues'])) {
             return $content
                 . "No incorrect sentences found.\n\n"
-                . "Comment:\n" . ($report['summary'] ?? '') . "\n";
+                . "Comment:\n" . ($report['summary'] ?? '') . "\n"
+                . $this->buildStudyPlanDownloadContent($report);
         }
 
         foreach ($report['issues'] as $index => $issue) {
@@ -334,7 +340,7 @@ class GrammarCheckController extends Controller
             $content .= "\nOverall Comment:\n" . $report['summary'] . "\n";
         }
 
-        return $content;
+        return $content . $this->buildStudyPlanDownloadContent($report);
     }
 
     protected function supportsDocxUploads(): bool
@@ -400,7 +406,15 @@ class GrammarCheckController extends Controller
               "is_correct": true,
               "original_sentence": "...",
               "corrected_sentence": "...",
-              "summary": "..."
+              "summary": "...",
+              "study_summary": "...",
+              "study_focus": [
+                {
+                  "topic": "...",
+                  "reason": "...",
+                  "priority": "high"
+                }
+              ]
             }
 
             Sentence:
@@ -434,7 +448,15 @@ class GrammarCheckController extends Controller
                   "explanation": "..."
                 }
               ],
-              "summary": "..."
+              "summary": "...",
+              "study_summary": "...",
+              "study_focus": [
+                {
+                  "topic": "...",
+                  "reason": "...",
+                  "priority": "high"
+                }
+              ]
             }
 
             PDF text:
@@ -462,7 +484,15 @@ class GrammarCheckController extends Controller
               "explanation": "..."
             }
           ],
-          "summary": "..."
+          "summary": "...",
+          "study_summary": "...",
+          "study_focus": [
+            {
+              "topic": "...",
+              "reason": "...",
+              "priority": "high"
+            }
+          ]
         }
 
         Text with line references:
@@ -479,11 +509,15 @@ class GrammarCheckController extends Controller
                 'original_sentence' => '',
                 'corrected_sentence' => 'Error',
                 'summary' => 'Unable to parse the grammar check response.',
+                'study_summary' => '',
+                'study_focus' => [],
             ]
             : [
                 'mode' => 'multi',
                 'issues' => [],
                 'summary' => 'Unable to parse the grammar check response.',
+                'study_summary' => '',
+                'study_focus' => [],
             ];
 
         if (! $outputText) {
@@ -503,6 +537,8 @@ class GrammarCheckController extends Controller
                 'original_sentence' => trim((string) ($json['original_sentence'] ?? '')),
                 'corrected_sentence' => trim((string) ($json['corrected_sentence'] ?? '')),
                 'summary' => trim((string) ($json['summary'] ?? '')),
+                'study_summary' => trim((string) ($json['study_summary'] ?? '')),
+                'study_focus' => $this->normalizeStudyFocus($json['study_focus'] ?? []),
             ];
         }
 
@@ -529,6 +565,8 @@ class GrammarCheckController extends Controller
             'mode' => 'multi',
             'issues' => $issues,
             'summary' => trim((string) ($json['summary'] ?? '')),
+            'study_summary' => trim((string) ($json['study_summary'] ?? '')),
+            'study_focus' => $this->normalizeStudyFocus($json['study_focus'] ?? []),
         ];
     }
 
@@ -597,5 +635,342 @@ class GrammarCheckController extends Controller
         }
 
         return '';
+    }
+
+    protected function normalizeStudyFocus($items): array
+    {
+        $focusItems = [];
+
+        foreach ((array) $items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $topic = trim((string) ($item['topic'] ?? ''));
+            $reason = trim((string) ($item['reason'] ?? ''));
+            $priority = strtolower(trim((string) ($item['priority'] ?? 'medium')));
+
+            if ($topic === '' && $reason === '') {
+                continue;
+            }
+
+            if (! in_array($priority, ['high', 'medium', 'low'], true)) {
+                $priority = 'medium';
+            }
+
+            $focusItems[] = [
+                'topic' => $topic,
+                'reason' => $reason,
+                'priority' => $priority,
+            ];
+        }
+
+        return collect($focusItems)
+            ->unique(function (array $item) {
+                return Str::lower($item['topic'] . '|' . $item['reason']);
+            })
+            ->values()
+            ->all();
+    }
+
+    protected function buildStudyPlan(array $report): array
+    {
+        $topics = Topic::with('category')->get();
+        $focusItems = collect($report['study_focus'] ?? []);
+
+        if ($focusItems->isEmpty()) {
+            $focusItems = $this->deriveStudyFocusFromReport($report);
+        }
+
+        $items = $focusItems
+            ->map(function (array $focus) use ($topics) {
+                $matchedTopic = $this->matchTopicFromFocus($focus, $topics);
+
+                return [
+                    'title' => $matchedTopic?->name ?: ($focus['topic'] ?: 'Grammar accuracy'),
+                    'reason' => $focus['reason'] ?: 'More targeted practice will help make this grammar area more automatic.',
+                    'priority' => $focus['priority'] ?? 'medium',
+                    'topic' => $matchedTopic ? [
+                        'id' => $matchedTopic->id,
+                        'name' => $matchedTopic->name,
+                        'description' => $matchedTopic->description,
+                        'difficulty' => $matchedTopic->difficultyLabel(),
+                        'category_name' => $matchedTopic->category?->name,
+                    ] : null,
+                    'resources' => $this->buildExternalResources($matchedTopic?->name ?: $focus['topic']),
+                ];
+            })
+            ->unique(function (array $item) {
+                return Str::lower($item['title']);
+            })
+            ->take(3)
+            ->values()
+            ->all();
+
+        $summary = trim((string) ($report['study_summary'] ?? ''));
+
+        if ($summary === '') {
+            $summary = empty($items)
+                ? 'Your writing looks strong overall. Keep reviewing a mix of grammar topics to stay consistent.'
+                : 'Focus on the topics below, then try a short quiz or practice activity to reinforce the patterns from this grammar check.';
+        }
+
+        return [
+            'summary' => $summary,
+            'items' => $items,
+        ];
+    }
+
+    protected function deriveStudyFocusFromReport(array $report)
+    {
+        $signals = [];
+
+        if (($report['mode'] ?? 'single') === 'single') {
+            $signals[] = implode(' ', [
+                $report['original_sentence'] ?? '',
+                $report['corrected_sentence'] ?? '',
+                $report['summary'] ?? '',
+            ]);
+        } else {
+            foreach ($report['issues'] ?? [] as $issue) {
+                $signals[] = implode(' ', [
+                    $issue['original'] ?? '',
+                    $issue['corrected'] ?? '',
+                    $issue['explanation'] ?? '',
+                ]);
+            }
+
+            $signals[] = $report['summary'] ?? '';
+        }
+
+        $combinedSignals = Str::lower(implode(' ', $signals));
+
+        $rules = [
+            'Subject-Verb Agreement' => ['subject-verb', 'subject verb', 'verb agree', 'singular subject', 'plural subject', 'third-person singular'],
+            'Articles' => ['article', 'articles', 'a an the'],
+            'Present Simple' => ['present simple', 'simple present', 'routine', 'habit'],
+            'Past Simple' => ['past simple', 'simple past', 'past tense'],
+            'Future Simple' => ['future simple', 'future tense', 'will ', 'going to'],
+            'Prepositions of Time' => ['preposition of time', 'prepositions of time', 'at on in time'],
+            'Prepositions of Place' => ['preposition of place', 'prepositions of place', 'location preposition'],
+            'Comparative Adjectives' => ['comparative', 'more than', 'than'],
+            'Superlative Adjectives' => ['superlative', 'the most', 'the best', 'the biggest'],
+            'Modal Verbs' => ['modal', 'should', 'must', 'can ', 'could ', 'may ', 'might '],
+        ];
+
+        $matches = collect($rules)
+            ->filter(function (array $keywords) use ($combinedSignals) {
+                foreach ($keywords as $keyword) {
+                    if (str_contains($combinedSignals, Str::lower($keyword))) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
+            ->keys()
+            ->values()
+            ->map(function (string $topicName) {
+                return [
+                    'topic' => $topicName,
+                    'reason' => 'This topic appeared in the grammar patterns identified in your writing.',
+                    'priority' => 'high',
+                ];
+            });
+
+        if ($matches->isNotEmpty()) {
+            return $matches;
+        }
+
+        return collect([
+            [
+                'topic' => 'Grammar Rules',
+                'reason' => 'Reviewing core grammar patterns will help you keep your writing accurate and consistent.',
+                'priority' => 'medium',
+            ],
+        ]);
+    }
+
+    protected function matchTopicFromFocus(array $focus, $topics): ?Topic
+    {
+        $signal = Str::lower(trim(($focus['topic'] ?? '') . ' ' . ($focus['reason'] ?? '')));
+
+        $aliases = [
+            'Present Simple' => ['present simple', 'simple present', 'habit', 'routine'],
+            'Past Simple' => ['past simple', 'simple past', 'past tense'],
+            'Future Simple' => ['future simple', 'future tense', 'will', 'going to'],
+            'Prepositions of Time' => ['prepositions of time', 'preposition of time', 'time expressions'],
+            'Prepositions of Place' => ['prepositions of place', 'preposition of place', 'location'],
+            'Comparative Adjectives' => ['comparative', 'compare two'],
+            'Superlative Adjectives' => ['superlative', 'highest degree'],
+            'Subject-Verb Agreement' => ['subject-verb agreement', 'subject verb agreement', 'verb agreement', 'singular subject', 'plural subject'],
+            'Articles' => ['article', 'articles', 'a an the'],
+            'Modal Verbs' => ['modal verb', 'modal verbs', 'should', 'must', 'can', 'could', 'may', 'might'],
+        ];
+
+        foreach ($topics as $topic) {
+            $topicName = Str::lower($topic->name);
+
+            if ($topicName !== '' && str_contains($signal, $topicName)) {
+                return $topic;
+            }
+
+            foreach ($aliases[$topic->name] ?? [] as $alias) {
+                if (str_contains($signal, Str::lower($alias))) {
+                    return $topic;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function buildExternalResources(?string $topicName): array
+    {
+        $defaultResources = [
+            [
+                'name' => 'BBC Learning English',
+                'url' => 'https://www.bbc.co.uk/learningenglish/',
+            ],
+            [
+                'name' => 'British Council LearnEnglish Grammar',
+                'url' => 'https://learnenglish.britishcouncil.org/grammar',
+            ],
+            [
+                'name' => 'Cambridge Dictionary Grammar',
+                'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+            ],
+        ];
+
+        $topicResources = [
+            'Subject-Verb Agreement' => [
+                [
+                    'name' => 'BBC Learning English',
+                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                ],
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+            ],
+            'Articles' => [
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+            ],
+            'Present Simple' => [
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+                [
+                    'name' => 'BBC Learning English',
+                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                ],
+            ],
+            'Past Simple' => [
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+            ],
+            'Future Simple' => [
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+                [
+                    'name' => 'BBC Learning English',
+                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                ],
+            ],
+            'Prepositions of Time' => [
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+            ],
+            'Prepositions of Place' => [
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+                [
+                    'name' => 'BBC Learning English',
+                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                ],
+            ],
+            'Comparative Adjectives' => [
+                [
+                    'name' => 'BBC Learning English',
+                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                ],
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+            ],
+            'Superlative Adjectives' => [
+                [
+                    'name' => 'BBC Learning English',
+                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                ],
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+            ],
+            'Modal Verbs' => [
+                [
+                    'name' => 'British Council Grammar',
+                    'url' => 'https://learnenglish.britishcouncil.org/grammar',
+                ],
+                [
+                    'name' => 'Cambridge Dictionary Grammar',
+                    'url' => 'https://dictionary.cambridge.org/grammar/british-grammar',
+                ],
+            ],
+        ];
+
+        return $topicResources[$topicName] ?? $defaultResources;
+    }
+
+    protected function buildStudyPlanDownloadContent(array $report): string
+    {
+        $studyPlan = $report['study_plan'] ?? $this->buildStudyPlan($report);
+
+        if (empty($studyPlan['items'])) {
+            return '';
+        }
+
+        $content = "\nStudy Focus:\n";
+
+        if (! empty($studyPlan['summary'])) {
+            $content .= $studyPlan['summary'] . "\n";
+        }
+
+        foreach ($studyPlan['items'] as $index => $item) {
+            $content .= "\n" . ($index + 1) . '. ' . ($item['title'] ?? 'Grammar practice') . "\n";
+            $content .= 'Reason: ' . ($item['reason'] ?? 'Targeted review will help reinforce this area.') . "\n";
+
+            foreach (($item['resources'] ?? []) as $resource) {
+                $content .= 'Resource: ' . ($resource['name'] ?? 'Online resource') . ' - ' . ($resource['url'] ?? '') . "\n";
+            }
+        }
+
+        return $content;
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TopicController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\QuizController;
 use App\Models\GrammarCheck;
 use App\Models\QuizAttempt;
@@ -58,6 +59,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('users/{user}/history', [UserController::class, 'history'])->name('users.history');
+    Route::resource('users', UserController::class)->except(['show']);
     Route::resource('categories', CategoryController::class)->except(['show']);
     Route::resource('topics', TopicController::class)->except(['show']);
     Route::resource('questions', QuestionController::class)->except(['show']);

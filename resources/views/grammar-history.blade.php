@@ -120,6 +120,18 @@
             background: #f9fafb;
             border: 1px solid #e5e7eb;
         }
+
+        .history-study-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .history-study-card {
+            padding: 1rem 1.1rem;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+            border: 1px solid #dbe7ff;
+        }
     </style>
 
     <div class="row justify-content-center">
@@ -166,6 +178,7 @@
                             && $issueExplanationLines->every(fn ($line) => preg_match($referencePattern, $line) === 1);
 
                         $parsedIssues = collect();
+                        $studyPlan = is_array($report['study_plan'] ?? null) ? $report['study_plan'] : null;
 
                         if (($report['mode'] ?? null) === 'multi' && !empty($report['issues']) && is_array($report['issues'])) {
                             $parsedIssues = collect($report['issues'])
@@ -284,6 +297,47 @@
                                 <h5 class="card-title mt-4 mb-3">Explanation</h5>
                                 <div class="history-explanation">
                                     <p class="history-text">{{ $overallComment ?: $check->explanation }}</p>
+                                </div>
+                            @endif
+
+                            @if(!empty($studyPlan['items']))
+                                <h5 class="card-title mt-4 mb-3">What to Study Next</h5>
+                                @if(!empty($studyPlan['summary']))
+                                    <div class="history-explanation mb-3">
+                                        <p class="history-text">{{ $studyPlan['summary'] }}</p>
+                                    </div>
+                                @endif
+
+                                <div class="history-study-grid">
+                                    @foreach($studyPlan['items'] as $item)
+                                        <div class="history-study-card">
+                                            <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                                <strong>{{ $item['title'] ?? 'Grammar practice' }}</strong>
+                                                <span class="history-issue-tag">{{ ucfirst($item['priority'] ?? 'medium') }} priority</span>
+                                            </div>
+
+                                            <p class="history-text mb-3">{{ $item['reason'] ?? 'Targeted review will help reinforce this grammar area.' }}</p>
+
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @if(!empty($item['topic']['id']))
+                                                    <a href="{{ route('quiz.start', $item['topic']['id']) }}" class="btn btn-sm btn-primary">
+                                                        Practice Topic
+                                                    </a>
+                                                @endif
+
+                                                @foreach(($item['resources'] ?? []) as $resource)
+                                                    <a
+                                                        href="{{ $resource['url'] }}"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                    >
+                                                        {{ $resource['name'] }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             @endif
                         </div>

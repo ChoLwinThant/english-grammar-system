@@ -1141,7 +1141,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">English Grammar System</a>
+            <a class="navbar-brand" href="{{ url('/') }}">Grammar~Path</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
                 aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -1152,7 +1152,7 @@
                     @auth
                         @if(! $isAdminRoute)
                             @if($isAdmin)
-                                <a class="nav-link {{ request()->routeIs('admin.categories.*', 'admin.topics.*', 'admin.questions.*') ? 'active-nav' : '' }}" href="{{ route('admin.categories.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.users.*', 'admin.categories.*', 'admin.topics.*', 'admin.questions.*') ? 'active-nav' : '' }}" href="{{ route('admin.users.index') }}">
                                     Admin Panel
                                 </a>
                             @endif
@@ -1251,6 +1251,18 @@
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6"></path><path d="M10 8h4"></path><path d="M5 5h14l-1 13a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3L5 5Z"></path></svg>
                                 </span>
                                 <span class="admin-nav-link-text">Practice Area</span>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <div class="admin-nav-section">
+                        <p class="admin-nav-label">Administration</p>
+                        <nav class="admin-nav">
+                            <a class="admin-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                                <span class="admin-nav-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path><path d="M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M17 11a3 3 0 1 0 0-6"></path><path d="M21 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                                </span>
+                                <span class="admin-nav-link-text">Users</span>
                             </a>
                         </nav>
                     </div>

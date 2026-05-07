@@ -25,6 +25,14 @@ class GrammarCheckTest extends TestCase
                             'original_sentence' => 'She go to school every day.',
                             'corrected_sentence' => 'She goes to school every day.',
                             'summary' => 'The verb should agree with the singular subject "She".',
+                            'study_summary' => 'Focus on subject-verb agreement and present simple sentence patterns.',
+                            'study_focus' => [
+                                [
+                                    'topic' => 'Subject-Verb Agreement',
+                                    'reason' => 'The verb form does not match the singular subject.',
+                                    'priority' => 'high',
+                                ],
+                            ],
                         ]),
                     ]],
                 ]],
@@ -40,6 +48,9 @@ class GrammarCheckTest extends TestCase
         $response->assertOk();
         $response->assertSee('She goes to school every day.');
         $response->assertSee('The verb should agree with the singular subject');
+        $response->assertSee('What to Study Next');
+        $response->assertSee('Subject-Verb Agreement');
+        $response->assertSee('BBC Learning English');
 
         $this->assertDatabaseHas('grammar_checks', [
             'user_id' => $user->id,
@@ -65,6 +76,14 @@ class GrammarCheckTest extends TestCase
                             'original_sentence' => 'this are the original file content.',
                             'corrected_sentence' => 'This is the corrected file content.',
                             'summary' => 'Capitalization and grammar were improved.',
+                            'study_summary' => 'Review subject-verb agreement and sentence-level proofreading.',
+                            'study_focus' => [
+                                [
+                                    'topic' => 'Subject-Verb Agreement',
+                                    'reason' => 'The verb form needs to agree with the subject.',
+                                    'priority' => 'high',
+                                ],
+                            ],
                         ]),
                     ]],
                 ]],
@@ -92,9 +111,11 @@ class GrammarCheckTest extends TestCase
             'content-disposition',
             'attachment; filename="draft-corrected.txt"'
         );
-        $downloadResponse->assertSee('Corrected Text:', false);
+        $downloadResponse->assertSee('Corrected Sentence:', false);
         $downloadResponse->assertSee('This is the corrected file content.', false);
         $downloadResponse->assertSee('Explanation:', false);
+        $downloadResponse->assertSee('Study Focus:', false);
+        $downloadResponse->assertSee('BBC Learning English', false);
     }
 
     public function test_history_uses_structured_issue_data_when_available(): void
@@ -123,6 +144,37 @@ class GrammarCheckTest extends TestCase
                     ],
                 ],
                 'summary' => 'The text has basic subject-verb agreement issues.',
+                'study_summary' => 'Keep practicing subject-verb agreement until the correct verb forms feel automatic.',
+                'study_focus' => [
+                    [
+                        'topic' => 'Subject-Verb Agreement',
+                        'reason' => 'Both sentences show verb forms that do not match the subject.',
+                        'priority' => 'high',
+                    ],
+                ],
+                'study_plan' => [
+                    'summary' => 'Keep practicing subject-verb agreement until the correct verb forms feel automatic.',
+                    'items' => [
+                        [
+                            'title' => 'Subject-Verb Agreement',
+                            'reason' => 'Both sentences show verb forms that do not match the subject.',
+                            'priority' => 'high',
+                            'topic' => [
+                                'id' => 8,
+                                'name' => 'Subject-Verb Agreement',
+                                'description' => 'Ensure subjects and verbs match in number and person.',
+                                'difficulty' => 'Basic',
+                                'category_name' => 'Grammar Rules',
+                            ],
+                            'resources' => [
+                                [
+                                    'name' => 'BBC Learning English',
+                                    'url' => 'https://www.bbc.co.uk/learningenglish/',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
             ],
         ]);
 
@@ -134,6 +186,8 @@ class GrammarCheckTest extends TestCase
         $response->assertSee('This is a sample sentence.');
         $response->assertSee('She goes to school every day.');
         $response->assertSee('The text has basic subject-verb agreement issues.');
+        $response->assertSee('What to Study Next');
+        $response->assertSee('BBC Learning English');
     }
 
     public function test_text_or_document_is_required(): void
