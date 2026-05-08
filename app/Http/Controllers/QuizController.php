@@ -18,13 +18,45 @@ class QuizController extends Controller
 
     public function topics(Category $category)
     {
-        $topics = $category->topics()->orderBy('name')->get();
-        return view('quiz.topics', compact('category', 'topics'));
+        $selectedDifficulty = trim((string) request('difficulty'));
+        $difficultyOptions = Topic::difficultyOptions();
+        $hasTopics = $category->topics()->exists();
+
+        if (! array_key_exists($selectedDifficulty, $difficultyOptions)) {
+            $selectedDifficulty = '';
+        }
+
+        $topics = $category->topics()
+            ->when($selectedDifficulty !== '', function ($query) use ($selectedDifficulty) {
+                $query->where('difficulty', $selectedDifficulty);
+            })
+            ->orderByRaw("
+                case difficulty
+                    when 'basic' then 1
+                    when 'elementary' then 2
+                    when 'intermediate' then 3
+                    when 'advanced' then 4
+                    else 5
+                end
+            ")
+            ->orderBy('name')
+            ->get();
+
+        return view('quiz.topics', compact('category', 'topics', 'difficultyOptions', 'selectedDifficulty', 'hasTopics'));
     }
 
     public function start(Topic $topic)
     {
-        $questions = $topic->questions()->get();
+        $questions = $topic->questions()->get()->map(function ($question) {
+            $question->display_options = collect([
+                ['key' => 'A', 'text' => $question->option_a],
+                ['key' => 'B', 'text' => $question->option_b],
+                ['key' => 'C', 'text' => $question->option_c],
+                ['key' => 'D', 'text' => $question->option_d],
+            ])->shuffle()->values();
+
+            return $question;
+        });
 
         return view('quiz.start', compact('topic', 'questions'));
     }

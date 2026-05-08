@@ -35,6 +35,22 @@
                     <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}">
                 </div>
 
+                <div class="mb-3">
+                    <label for="difficulty" class="form-label">Difficulty Level</label>
+                    <select name="difficulty" id="difficulty" class="form-select">
+                        @foreach($difficultyOptions as $value => $label)
+                            <option value="{{ $value }}" {{ old('difficulty', \App\Models\Topic::DIFFICULTY_BASIC) === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" id="description" class="form-control" rows="4">{{ old('description') }}</textarea>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Save</button>
                 <a href="{{ route('admin.topics.index') }}" class="btn btn-secondary">Cancel</a>
             </form>

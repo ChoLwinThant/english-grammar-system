@@ -6,19 +6,37 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Topic;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TopicController extends Controller
 {
     public function index()
     {
-        $topics = Topic::with('category')->latest()->get();
-        return view('admin.topics.index', compact('topics'));
+        $search = trim((string) request('search'));
+
+        $topics = Topic::with('category')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('difficulty', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%')
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('admin.topics.index', compact('topics', 'search'));
     }
 
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.topics.create', compact('categories'));
+        $difficultyOptions = Topic::difficultyOptions();
+
+        return view('admin.topics.create', compact('categories', 'difficultyOptions'));
     }
 
     public function store(Request $request)
@@ -26,11 +44,15 @@ class TopicController extends Controller
         $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
+            'difficulty' => ['required', Rule::in(array_keys(Topic::difficultyOptions()))],
+            'description' => ['nullable', 'string'],
         ]);
 
         Topic::create([
             'category_id' => $request->category_id,
             'name' => $request->name,
+            'difficulty' => $request->difficulty,
+            'description' => $request->description,
         ]);
 
         return redirect()->route('admin.topics.index')
@@ -40,7 +62,9 @@ class TopicController extends Controller
     public function edit(Topic $topic)
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.topics.edit', compact('topic', 'categories'));
+        $difficultyOptions = Topic::difficultyOptions();
+
+        return view('admin.topics.edit', compact('topic', 'categories', 'difficultyOptions'));
     }
 
     public function update(Request $request, Topic $topic)
@@ -48,11 +72,15 @@ class TopicController extends Controller
         $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
+            'difficulty' => ['required', Rule::in(array_keys(Topic::difficultyOptions()))],
+            'description' => ['nullable', 'string'],
         ]);
 
         $topic->update([
             'category_id' => $request->category_id,
             'name' => $request->name,
+            'difficulty' => $request->difficulty,
+            'description' => $request->description,
         ]);
 
         return redirect()->route('admin.topics.index')

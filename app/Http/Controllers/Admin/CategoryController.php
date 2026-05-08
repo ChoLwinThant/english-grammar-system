@@ -10,8 +10,19 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->get();
-        return view('admin.categories.index', compact('categories'));
+        $search = trim((string) request('search'));
+
+        $categories = Category::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('admin.categories.index', compact('categories', 'search'));
     }
 
     public function create()
@@ -23,10 +34,12 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
+            'description' => ['nullable', 'string'],
         ]);
 
         Category::create([
             'name' => $request->name,
+            'description' => $request->description,
         ]);
 
         return redirect()->route('admin.categories.index')
@@ -42,10 +55,12 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:categories,name,' . $category->id],
+            'description' => ['nullable', 'string'],
         ]);
 
         $category->update([
             'name' => $request->name,
+            'description' => $request->description,
         ]);
 
         return redirect()->route('admin.categories.index')
