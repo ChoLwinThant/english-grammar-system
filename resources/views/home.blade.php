@@ -342,7 +342,6 @@
 
         <section class="section-block">
             <h2 class="section-title">Built for practical daily improvement</h2>
-            <p class="section-copy">No heavy card layout, just clear features and clean reading flow.</p>
 
             <div class="feature-list">
                 <div class="feature-item">

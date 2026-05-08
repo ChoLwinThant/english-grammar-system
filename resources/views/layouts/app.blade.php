@@ -27,7 +27,9 @@
 
     body {
         background-color: var(--bg);
-        font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        /* font-family: 'Plus Jakarta Sans', 'Segoe UI', 'cursive', 'Aptos', 'Helvetica Neue', 'Sans serif', 'Nunito' sans-serif; */
+font-family: "Nunito", sans-serif;
+        /* font-family: 'Nunito', sans-serif; */
         color: var(--text);
     }
 
